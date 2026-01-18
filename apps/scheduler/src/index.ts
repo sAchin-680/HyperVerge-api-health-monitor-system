@@ -1,6 +1,10 @@
 import { redis } from './redis';
 import { Job } from '../../../packages/shared/src/types';
 
+const MAX_RETRIES = 3;
+const DEAD_LETTER_QUEUE = 'jobs:dead';
+let failedJobs = 0;
+
 // Configurable job parameters
 const JOB_URLS = [
   'https://example.com',
@@ -17,36 +21,76 @@ function getRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function createJob(): Job & { timestamp: string } {
+function createJob(): Job & { timestamp: string; retries: number } {
   return {
     id: crypto.randomUUID(),
     url: getRandom(JOB_URLS),
     interval: getRandom(JOB_INTERVALS),
     timestamp: new Date().toISOString(),
+    retries: 0,
   };
 }
 
 async function queueJob() {
   if (isShuttingDown) return;
-  const job = createJob();
+  let job = createJob();
+  let attempt = 0;
+  while (attempt < MAX_RETRIES) {
+    try {
+      await redis.lpush('jobs', JSON.stringify(job));
+      jobCount++;
+      if (attempt > 0) {
+        console.log(
+          `\x1b[33m[SCHEDULER] Job queued after retry (#${jobCount}):\x1b[0m`,
+          job
+        );
+      } else {
+        console.log(
+          `\x1b[32m[SCHEDULER] Job queued (#${jobCount}):\x1b[0m`,
+          job
+        );
+      }
+      return;
+    } catch (error) {
+      attempt++;
+      job.retries = attempt;
+      console.error(
+        `\x1b[31m[SCHEDULER] Failed to queue job (attempt ${attempt}):\x1b[0m`,
+        error
+      );
+      await new Promise((res) => setTimeout(res, 500 * attempt));
+    }
+  }
+  // Dead-letter queue
   try {
-    await redis.lpush('jobs', JSON.stringify(job));
-    jobCount++;
-    console.log(`\x1b[32m[SCHEDULER] Job queued (#${jobCount}):\x1b[0m`, job);
-  } catch (error) {
-    console.error(`\x1b[31m[SCHEDULER] Failed to queue job:\x1b[0m`, error);
+    await redis.lpush(DEAD_LETTER_QUEUE, JSON.stringify(job));
+    failedJobs++;
+    console.error(
+      `\x1b[41m[SCHEDULER] Job moved to dead-letter queue:\x1b[0m`,
+      job
+    );
+  } catch (err) {
+    console.error(
+      `\x1b[41m[SCHEDULER] Failed to move job to dead-letter queue:\x1b[0m`,
+      err
+    );
   }
 }
 
 function logStats() {
-  console.log(
-    `\x1b[34m[SCHEDULER] Total jobs queued so far: ${jobCount}\x1b[0m`
-  );
+  redis.llen('jobs').then((queueLen) => {
+    redis.llen(DEAD_LETTER_QUEUE).then((deadLen) => {
+      console.log(
+        `\x1b[34m[SCHEDULER] Total jobs queued: ${jobCount}, Failed jobs: ${failedJobs}, Queue length: ${queueLen}, Dead-letter: ${deadLen}\x1b[0m`
+      );
+    });
+  });
 }
 
-function gracefulShutdown() {
+async function gracefulShutdown() {
   isShuttingDown = true;
   console.log('\x1b[33m[SCHEDULER] Shutting down gracefully...\x1b[0m');
+  await new Promise((res) => setTimeout(res, 1000));
   logStats();
   redis.quit(() => {
     console.log('\x1b[33m[SCHEDULER] Redis connection closed. Exiting.\x1b[0m');
