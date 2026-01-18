@@ -10,6 +10,9 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "axios": "^1.13.2",
+    "bullmq": "^5.66.5",
     "ioredis": "^5.9.2",
     "redis": "^5.10.0"
   },
