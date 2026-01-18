@@ -145,6 +145,7 @@ terraform output db_endpoint
 ### VPC Module
 
 Creates a production-ready VPC with:
+
 - Public subnets (for ALB)
 - Private subnets (for ECS and RDS)
 - Internet Gateway
@@ -154,6 +155,7 @@ Creates a production-ready VPC with:
 ### Security Module
 
 Implements least-privilege security groups:
+
 - **ALB SG**: HTTP/HTTPS from internet
 - **ECS SG**: Traffic only from ALB
 - **RDS SG**: PostgreSQL only from ECS
@@ -162,6 +164,7 @@ Implements least-privilege security groups:
 ### ALB Module
 
 Application Load Balancer with:
+
 - HTTP listener (with HTTPS redirect option)
 - HTTPS listener (optional)
 - Target group with health checks
@@ -170,6 +173,7 @@ Application Load Balancer with:
 ### ECS Module
 
 ECS Fargate setup including:
+
 - ECS Cluster with Container Insights
 - Task Definition with health checks
 - ECS Service with deployment circuit breaker
@@ -181,6 +185,7 @@ ECS Fargate setup including:
 ### RDS Module
 
 PostgreSQL database with:
+
 - DB subnet group
 - Parameter group with optimized settings
 - Optional Multi-AZ deployment
@@ -193,20 +198,20 @@ PostgreSQL database with:
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
+| Variable      | Description         | Example             |
+| ------------- | ------------------- | ------------------- |
 | `db_password` | RDS master password | `"SecureP@ssw0rd!"` |
 
 ### Environment-Specific Settings
 
-| Setting | Dev | Prod |
-|---------|-----|------|
-| NAT Gateway | Single | Per-AZ |
-| Multi-AZ RDS | No | Yes |
-| ECS Auto Scaling | Disabled | Enabled |
-| Fargate Spot | Yes | No |
-| Deletion Protection | No | Yes |
-| Backup Retention | 7 days | 30 days |
+| Setting             | Dev      | Prod    |
+| ------------------- | -------- | ------- |
+| NAT Gateway         | Single   | Per-AZ  |
+| Multi-AZ RDS        | No       | Yes     |
+| ECS Auto Scaling    | Disabled | Enabled |
+| Fargate Spot        | Yes      | No      |
+| Deletion Protection | No       | Yes     |
+| Backup Retention    | 7 days   | 30 days |
 
 ### Sensitive Variables
 
@@ -287,12 +292,14 @@ terraform destroy -var-file=envs/dev/terraform.tfvars -auto-approve
 ## 📈 Cost Optimization
 
 ### Development
+
 - Single NAT Gateway (~$32/month saved)
 - Fargate Spot (up to 70% savings)
 - db.t3.micro RDS
 - No Multi-AZ
 
 ### Production
+
 - Consider Reserved Capacity for Fargate
 - RDS Reserved Instances
 - Use S3 lifecycle policies for logs

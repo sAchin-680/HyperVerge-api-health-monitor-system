@@ -130,9 +130,9 @@ output "rds_security_group_id" {
 output "useful_commands" {
   description = "Helpful AWS CLI commands"
   value = {
-    view_logs         = "aws logs tail ${module.ecs.log_group_name} --follow"
-    update_service    = "aws ecs update-service --cluster ${module.ecs.cluster_name} --service ${module.ecs.service_name} --force-new-deployment"
-    get_db_secret     = "aws secretsmanager get-secret-value --secret-id ${module.rds.db_credentials_secret_arn} --query SecretString --output text | jq"
-    describe_tasks    = "aws ecs describe-tasks --cluster ${module.ecs.cluster_name} --tasks $(aws ecs list-tasks --cluster ${module.ecs.cluster_name} --service-name ${module.ecs.service_name} --query 'taskArns[0]' --output text)"
+    view_logs      = "aws logs tail ${module.ecs.log_group_name} --follow"
+    update_service = "aws ecs update-service --cluster ${module.ecs.cluster_name} --service ${module.ecs.service_name} --force-new-deployment"
+    get_db_secret  = "aws secretsmanager get-secret-value --secret-id ${module.rds.db_credentials_secret_arn} --query SecretString --output text | jq"
+    describe_tasks = "aws ecs describe-tasks --cluster ${module.ecs.cluster_name} --tasks $(aws ecs list-tasks --cluster ${module.ecs.cluster_name} --service-name ${module.ecs.service_name} --query 'taskArns[0]' --output text)"
   }
 }

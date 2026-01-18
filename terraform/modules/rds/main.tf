@@ -107,13 +107,13 @@ resource "aws_db_instance" "main" {
   identifier = "${var.project_name}-db-${var.environment}"
 
   # Engine configuration
-  engine               = "postgres"
-  engine_version       = var.engine_version
-  instance_class       = var.instance_class
-  allocated_storage    = var.allocated_storage
+  engine                = "postgres"
+  engine_version        = var.engine_version
+  instance_class        = var.instance_class
+  allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
-  storage_type         = var.storage_type
-  storage_encrypted    = true
+  storage_type          = var.storage_type
+  storage_encrypted     = true
 
   # Database configuration
   db_name  = var.database_name
@@ -140,8 +140,8 @@ resource "aws_db_instance" "main" {
   performance_insights_retention_period = var.enable_performance_insights ? 7 : null
 
   # Deletion protection
-  deletion_protection = var.environment == "prod" ? true : false
-  skip_final_snapshot = var.environment == "prod" ? false : true
+  deletion_protection       = var.environment == "prod" ? true : false
+  skip_final_snapshot       = var.environment == "prod" ? false : true
   final_snapshot_identifier = var.environment == "prod" ? "${var.project_name}-db-final-${var.environment}" : null
 
   # Enable IAM authentication
