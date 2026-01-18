@@ -38,3 +38,8 @@ Thumbs.db
 !.yarn/versions
 next-env.d.ts
 *.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.pyc

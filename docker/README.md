@@ -1,17 +1,18 @@
 # Docker Configuration
 
-This directory contains centralized Docker configurations for the HyperVerge API Health Monitor System.
+This directory contains Docker documentation for the HyperVerge API Health Monitor System.
 
-## Directory Structure
+## Dockerfile Locations
+
+Dockerfiles are co-located with each service for better maintainability:
 
 ```
-docker/
-├── README.md
-├── api.Dockerfile
-├── worker.Dockerfile
-├── scheduler.Dockerfile
-├── notifier.Dockerfile
-└── base.Dockerfile
+apps/
+├── api/Dockerfile
+├── worker/Dockerfile
+├── scheduler/Dockerfile
+├── notifier/Dockerfile
+└── web/Dockerfile
 ```
 
 ## Base Image
@@ -30,10 +31,10 @@ docker compose build
 ### Build Individual Service
 
 ```bash
-docker build -f docker/api.Dockerfile -t hyperverge-api .
-docker build -f docker/worker.Dockerfile -t hyperverge-worker .
-docker build -f docker/scheduler.Dockerfile -t hyperverge-scheduler .
-docker build -f docker/notifier.Dockerfile -t hyperverge-notifier .
+docker build -f apps/api/Dockerfile -t hyperverge-api .
+docker build -f apps/worker/Dockerfile -t hyperverge-worker .
+docker build -f apps/scheduler/Dockerfile -t hyperverge-scheduler .
+docker build -f apps/notifier/Dockerfile -t hyperverge-notifier .
 ```
 
 ## Image Tags
