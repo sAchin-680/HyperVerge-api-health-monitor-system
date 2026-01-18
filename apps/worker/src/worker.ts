@@ -6,6 +6,7 @@ import { handleIncident } from './incidentManager';
 import { connectRedis, monitorQueue } from './redis';
 import { connectDb, prisma } from './db';
 import { MonitorJob } from './types';
+import { startHealthServer } from './health';
 
 async function storeResult(
   monitorId: string,
@@ -37,6 +38,10 @@ async function notify(monitorId: string, status: 'UP' | 'DOWN', event: string) {
 
 async function main() {
   console.log('🚀 Starting worker service...');
+
+  // Start health check server
+  startHealthServer();
+  console.log('✓ Health server started');
 
   await connectRedis();
   console.log('✓ Connected to Redis');
