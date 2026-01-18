@@ -3,6 +3,13 @@ import { sendEmail } from '../providers/email';
 import { sendWebhook } from '../providers/webhook';
 import { logDelivery } from '../services/delivery.service';
 import { retryQueue } from './retryQueue';
+import { logger } from '../lib/logger';
+import {
+  notificationsSent,
+  notificationDuration,
+  retryAttempts,
+  notificationQueueSize,
+} from '../lib/metrics';
 
 // Type-only import to avoid runtime issues
 type AlertEvent = {
@@ -25,19 +32,31 @@ export const worker = new Worker<AlertEvent>(
     const event = job.data;
     const attempt = event.attempt ?? 1;
 
-    console.log(
-      `[CONSUMER] Processing alert ${event.alertId} (attempt ${attempt})`
+    const endTimer = notificationDuration.startTimer({ channel: event.type });
+
+    logger.info(
+      { alertId: event.alertId, type: event.type, attempt },
+      'Processing alert'
     );
 
     try {
       // Send notification based on type
       if (event.type === 'email') {
         await sendEmail(event.target, event.message);
-        console.log(`[CONSUMER] ✅ Email sent to ${event.target}`);
+        logger.info(
+          { target: event.target, alertId: event.alertId },
+          'Email sent successfully'
+        );
       } else if (event.type === 'webhook') {
         await sendWebhook(event.target, event.message);
-        console.log(`[CONSUMER] ✅ Webhook sent to ${event.target}`);
+        logger.info(
+          { target: event.target, alertId: event.alertId },
+          'Webhook sent successfully'
+        );
       }
+
+      endTimer();
+      notificationsSent.inc({ channel: event.type, status: 'success' });
 
       // Log successful delivery
       await logDelivery({
@@ -50,9 +69,19 @@ export const worker = new Worker<AlertEvent>(
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error(
-        `[CONSUMER] ❌ Failed to send ${event.type} to ${event.target}:`,
-        errorMessage
+
+      endTimer();
+      notificationsSent.inc({ channel: event.type, status: 'failure' });
+
+      logger.error(
+        {
+          alertId: event.alertId,
+          type: event.type,
+          target: event.target,
+          error: errorMessage,
+          attempt,
+        },
+        'Failed to send notification'
       );
 
       // Log failed delivery
@@ -71,8 +100,19 @@ export const worker = new Worker<AlertEvent>(
         const nextAttempt = attempt + 1;
         const delay = Math.pow(2, attempt) * 5000; // Exponential backoff: 5s, 10s, 20s, 40s
 
-        console.log(
-          `[CONSUMER] 🔄 Scheduling retry ${nextAttempt}/5 with ${delay}ms delay`
+        retryAttempts.inc({
+          channel: event.type,
+          attempt: nextAttempt.toString(),
+        });
+
+        logger.warn(
+          {
+            alertId: event.alertId,
+            nextAttempt,
+            delay,
+            maxAttempts: 5,
+          },
+          'Scheduling retry'
         );
 
         await retryQueue.add(
@@ -81,8 +121,9 @@ export const worker = new Worker<AlertEvent>(
           { delay }
         );
       } else {
-        console.error(
-          `[CONSUMER] ⚠️ Max retries reached for alert ${event.alertId}`
+        logger.error(
+          { alertId: event.alertId, attempt },
+          'Max retries reached'
         );
       }
 
@@ -98,15 +139,15 @@ export const worker = new Worker<AlertEvent>(
 );
 
 worker.on('completed', (job) => {
-  console.log(`[WORKER] Job ${job.id} completed successfully`);
+  logger.debug({ jobId: job.id }, 'Job completed');
 });
 
 worker.on('failed', (job, err) => {
-  console.error(`[WORKER] Job ${job?.id} failed:`, err.message);
+  logger.error({ jobId: job?.id, error: err.message }, 'Job failed');
 });
 
 worker.on('error', (err) => {
-  console.error('[WORKER] Worker error:', err);
+  logger.error({ error: err.message }, 'Worker error');
 });
 
-console.log('[WORKER] Alert consumer started, waiting for jobs...');
+logger.info('Alert consumer started - waiting for jobs...');

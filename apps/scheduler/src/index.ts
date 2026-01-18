@@ -1,5 +1,13 @@
 import { redis } from './redis';
 import { Job } from '../../../packages/shared/src/types';
+import { logger } from './lib/logger';
+import {
+  jobsScheduled,
+  schedulingErrors,
+  activeMonitorsCount,
+  schedulerCycleDuration,
+} from './lib/metrics';
+import { startHealthServer } from './health';
 
 const MAX_RETRIES = 3;
 const DEAD_LETTER_QUEUE = 'jobs:dead';
@@ -35,65 +43,70 @@ async function queueJob() {
   if (isShuttingDown) return;
   let job = createJob();
   let attempt = 0;
+
+  const endTimer = schedulerCycleDuration.startTimer();
+
   while (attempt < MAX_RETRIES) {
     try {
       await redis.lpush('jobs', JSON.stringify(job));
       jobCount++;
+
+      jobsScheduled.inc({ monitor_type: 'http' });
+      endTimer();
+
       if (attempt > 0) {
-        console.log(
-          `\x1b[33m[SCHEDULER] Job queued after retry (#${jobCount}):\x1b[0m`,
-          job
-        );
+        logger.warn({ job, attempt, jobCount }, 'Job queued after retry');
       } else {
-        console.log(
-          `\x1b[32m[SCHEDULER] Job queued (#${jobCount}):\x1b[0m`,
-          job
-        );
+        logger.info({ job, jobCount }, 'Job queued successfully');
       }
       return;
     } catch (error) {
       attempt++;
       job.retries = attempt;
-      console.error(
-        `\x1b[31m[SCHEDULER] Failed to queue job (attempt ${attempt}):\x1b[0m`,
-        error
-      );
+      schedulingErrors.inc({ type: 'queue_push_failed' });
+      logger.error({ job, attempt, error }, 'Failed to queue job');
       await new Promise((res) => setTimeout(res, 500 * attempt));
     }
   }
+
   // Dead-letter queue
   try {
     await redis.lpush(DEAD_LETTER_QUEUE, JSON.stringify(job));
     failedJobs++;
-    console.error(
-      `\x1b[41m[SCHEDULER] Job moved to dead-letter queue:\x1b[0m`,
-      job
-    );
+    schedulingErrors.inc({ type: 'moved_to_dlq' });
+    logger.error({ job, failedJobs }, 'Job moved to dead-letter queue');
   } catch (err) {
-    console.error(
-      `\x1b[41m[SCHEDULER] Failed to move job to dead-letter queue:\x1b[0m`,
-      err
-    );
+    schedulingErrors.inc({ type: 'dlq_push_failed' });
+    logger.fatal({ job, err }, 'Failed to move job to dead-letter queue');
   }
 }
 
 function logStats() {
   redis.llen('jobs').then((queueLen) => {
     redis.llen(DEAD_LETTER_QUEUE).then((deadLen) => {
-      console.log(
-        `\x1b[34m[SCHEDULER] Total jobs queued: ${jobCount}, Failed jobs: ${failedJobs}, Queue length: ${queueLen}, Dead-letter: ${deadLen}\x1b[0m`
+      logger.info(
+        {
+          totalJobs: jobCount,
+          failedJobs,
+          queueLength: queueLen,
+          deadLetterQueue: deadLen,
+        },
+        'Scheduler stats'
       );
+
+      // Update metrics
+      activeMonitorsCount.set(queueLen);
     });
   });
 }
 
 async function gracefulShutdown() {
   isShuttingDown = true;
-  console.log('\x1b[33m[SCHEDULER] Shutting down gracefully...\x1b[0m');
+  logger.warn('Shutting down gracefully...');
   await new Promise((res) => setTimeout(res, 1000));
   logStats();
   redis.quit(() => {
-    console.log('\x1b[33m[SCHEDULER] Redis connection closed. Exiting.\x1b[0m');
+    logger.info('Redis connection closed. Exiting.');
     process.exit(0);
   });
 }
@@ -101,8 +114,12 @@ async function gracefulShutdown() {
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-console.log(
-  `[SCHEDULER] Scheduler started. Queuing jobs every ${QUEUE_INTERVAL_MS / 1000} seconds.`
+// Start health server
+startHealthServer();
+
+logger.info(
+  { intervalMs: QUEUE_INTERVAL_MS },
+  'Scheduler started - queuing jobs'
 );
 setInterval(queueJob, QUEUE_INTERVAL_MS);
 setInterval(logStats, 30000); // Log stats every 30 seconds

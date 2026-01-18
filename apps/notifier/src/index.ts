@@ -1,8 +1,13 @@
 import './queue/consumer';
+import { logger } from './lib/logger';
+import { startHealthServer } from './health';
 
-console.log('🚀 Notifier Service running');
-console.log("📬 Listening for alert events on 'alerts' queue");
-console.log(
+// Start health server
+startHealthServer();
+
+logger.info('🚀 Notifier service running');
+logger.info("📬 Listening for alert events on 'alerts' queue");
+logger.info(
   '🔄 Retry logic enabled with exponential backoff (up to 5 attempts)'
 );
-console.log('📊 Delivery logging enabled');
+logger.info('📊 Delivery logging enabled');
