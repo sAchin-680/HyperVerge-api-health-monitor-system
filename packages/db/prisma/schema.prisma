@@ -32,3 +32,19 @@ model Job {
 
   @@index([status, runAt])
 }
+
+model Delivery {
+  id        String   @id @default(cuid())
+  alertId   String
+  type      String   // "email" or "webhook"
+  target    String   // email address or webhook URL
+  status    String   // "success" or "failed"
+  message   String?
+  error     String?
+  attempt   Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@index([alertId])
+  @@index([status])
+  @@index([createdAt])
+}
