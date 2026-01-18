@@ -1,0 +1,102 @@
+# Dependabot configuration
+# Automatically creates PRs for dependency updates
+
+version: 2
+
+updates:
+  # NPM dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'UTC'
+    open-pull-requests-limit: 10
+    labels:
+      - 'dependencies'
+      - 'npm'
+    commit-message:
+      prefix: 'chore(deps):'
+    groups:
+      # Group minor and patch updates together
+      minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      # Group TypeScript ecosystem updates
+      typescript:
+        patterns:
+          - 'typescript'
+          - 'typescript-eslint'
+          - '@types/*'
+      # Group ESLint ecosystem updates
+      eslint:
+        patterns:
+          - 'eslint*'
+          - '@eslint/*'
+      # Group testing tools
+      testing:
+        patterns:
+          - 'vitest'
+          - 'jest'
+          - '@testing-library/*'
+
+  # Docker base images
+  - package-ecosystem: 'docker'
+    directory: '/apps/api'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'docker'
+    commit-message:
+      prefix: 'chore(docker):'
+
+  - package-ecosystem: 'docker'
+    directory: '/apps/scheduler'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'docker'
+
+  - package-ecosystem: 'docker'
+    directory: '/apps/worker'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'docker'
+
+  - package-ecosystem: 'docker'
+    directory: '/apps/notifier'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'docker'
+
+  # Terraform providers
+  - package-ecosystem: 'terraform'
+    directory: '/terraform'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'terraform'
+    commit-message:
+      prefix: 'chore(terraform):'
+
+  # GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      prefix: 'chore(ci):'

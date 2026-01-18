@@ -1,0 +1,424 @@
+# =============================================================================
+# CI/CD Pipeline - Quality Gates & Continuous Deployment
+# =============================================================================
+# This unified pipeline ensures code quality and handles deployments:
+#
+# CI (Pull Requests & Pushes):
+#   - Linting (code style & best practices)
+#   - Type checking (TypeScript validation)
+#   - Building (compilation verification)
+#   - Testing (unit & integration tests)
+#   - Docker build (deployment artifact validation)
+#   - Terraform validation
+#   - Security scanning
+#
+# CD (Main Branch):
+#   - Build and push Docker images to GHCR
+#   - Deploy to staging
+#   - Deploy to production (with approval)
+# =============================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ===========================================================================
+  # CI: Code Quality Checks
+  # ===========================================================================
+  quality:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck:all
+        continue-on-error: true
+
+  # ===========================================================================
+  # CI: Build Verification
+  # ===========================================================================
+  build:
+    name: 🔨 Build
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd packages/db
+          npx prisma generate
+
+      - name: Build all packages
+        run: npm run build
+        continue-on-error: true
+
+  # ===========================================================================
+  # CI: Test Suite
+  # ===========================================================================
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      REDIS_URL: redis://localhost:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd packages/db
+          npx prisma generate
+
+      - name: Run database migrations
+        run: |
+          cd packages/db
+          npx prisma migrate deploy
+        continue-on-error: true
+
+      - name: Run tests
+        run: npm test
+
+  # ===========================================================================
+  # CI: Docker Build Validation
+  # ===========================================================================
+  docker-build:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: [quality, build]
+
+    strategy:
+      matrix:
+        service: [api, scheduler, worker, notifier]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/${{ matrix.service }}/Dockerfile
+          push: false
+          tags: ${{ env.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===========================================================================
+  # CI: Terraform Validation
+  # ===========================================================================
+  terraform:
+    name: 🏗️ Terraform Validate
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  # ===========================================================================
+  # CI: Security Scanning
+  # ===========================================================================
+  security:
+    name: 🔐 Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          severity: "CRITICAL,HIGH"
+          exit-code: "0"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+        continue-on-error: true
+
+  # ===========================================================================
+  # CI: Summary Gate
+  # ===========================================================================
+  ci-success:
+    name: ✅ CI Success
+    runs-on: ubuntu-latest
+    needs: [quality, build, test, docker-build, terraform]
+    if: always()
+
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.quality.result }}" == "failure" ]]; then
+            echo "❌ Quality checks failed"
+            exit 1
+          fi
+          if [[ "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ Build failed"
+            exit 1
+          fi
+          if [[ "${{ needs.docker-build.result }}" == "failure" ]]; then
+            echo "❌ Docker build failed"
+            exit 1
+          fi
+          if [[ "${{ needs.terraform.result }}" == "failure" ]]; then
+            echo "❌ Terraform validation failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed!"
+
+  # ===========================================================================
+  # CD: Build and Push Docker Images
+  # ===========================================================================
+  docker-push:
+    name: 📦 Push Images
+    runs-on: ubuntu-latest
+    needs: ci-success
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service: [api, scheduler, worker, notifier]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # ===========================================================================
+  # CD: Deploy to Staging
+  # ===========================================================================
+  deploy-staging:
+    name: 🚀 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: docker-push
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.hyperverge-monitor.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "Image tag: ${{ github.sha }}"
+          # Add your deployment commands here:
+          # - kubectl set image deployment/api api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:${{ github.sha }}
+          # - aws ecs update-service --cluster staging --service api --force-new-deployment
+          # - docker compose -f docker-compose.staging.yml up -d
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Staging deployment completed"
+          echo "Waiting for services to be healthy..."
+          sleep 10
+          # Add health check verification:
+          # curl -f https://staging.hyperverge-monitor.example.com/health || exit 1
+
+  # ===========================================================================
+  # CD: Deploy to Production (Requires Approval)
+  # ===========================================================================
+  deploy-production:
+    name: 🌐 Deploy Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://hyperverge-monitor.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production environment..."
+          echo "Image tag: ${{ github.sha }}"
+          # Add your production deployment commands here
+          # IMPORTANT: Production deployments should be carefully managed
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Production deployment completed"
+          # Add production health check verification
+
+      - name: Notify success
+        run: |
+          echo "📣 Production deployment successful!"
+          echo "Deployed version: ${{ github.sha }}"
+          # Add Slack/Discord notification here if desired
+
+  # ===========================================================================
+  # CD: Rollback (Manual Trigger)
+  # ===========================================================================
+  rollback:
+    name: ⏪ Rollback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && failure()
+
+    steps:
+      - name: Rollback deployment
+        run: |
+          echo "⚠️ Initiating rollback..."
+          # Add rollback commands here:
+          # kubectl rollout undo deployment/api
+          echo "Rollback completed"

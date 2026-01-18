@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Generated files
+prisma/migrations/
+**/.prisma/
+
+# Lock files (don't format these)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Coverage
+coverage/
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+*.min.js
+*.min.css

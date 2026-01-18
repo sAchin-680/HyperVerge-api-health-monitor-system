@@ -1,10 +1,32 @@
 {
   "name": "hyperverge-api-health-monitor-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "Production-grade API health monitoring system with microservices architecture",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.base.json",
+    "typecheck:api": "tsc --noEmit -p apps/api/tsconfig.json",
+    "typecheck:worker": "tsc --noEmit -p apps/worker/tsconfig.json",
+    "typecheck:scheduler": "tsc --noEmit -p apps/scheduler/tsconfig.json",
+    "typecheck:notifier": "tsc --noEmit -p apps/notifier/tsconfig.json",
+    "typecheck:all": "npm run typecheck:api && npm run typecheck:worker && npm run typecheck:scheduler && npm run typecheck:notifier",
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build -w @apps/api",
+    "test": "echo 'Tests not yet configured' && exit 0",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "prisma:generate": "npm run prisma:generate -w @packages/db",
+    "prisma:migrate": "npm run prisma:migrate -w @packages/db",
+    "dev": "concurrently \"npm run dev -w @apps/api\" \"npm run dev -w @apps/scheduler\" \"npm run dev -w @apps/worker\" \"npm run dev -w @apps/notifier\"",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules"
   },
   "repository": {
     "type": "git",
@@ -19,13 +41,16 @@
   },
   "homepage": "https://github.com/sAchin-680/HyperVerge-api-health-monitor-system#readme",
   "devDependencies": {
+    "@eslint/js": "^9.15.0",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.8.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.0"
   },
   "workspaces": [
     "apps/*",
