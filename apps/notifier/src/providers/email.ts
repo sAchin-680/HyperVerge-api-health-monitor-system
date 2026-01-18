@@ -13,7 +13,7 @@ export async function sendEmail(to: string, message: string) {
   await transporter.sendMail({
     from: '"Uptime Monitor" <alerts@yourapp.com>',
     to,
-    subject: '🚨 Alert Notification',
+    subject: 'Alert Notification',
     text: message,
     html: `<p><strong>${message}</strong></p>`,
   });

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Phase 7 Observability Test Script
+# Observability Test Script
 # Tests all health checks and metrics endpoints
 
 echo "========================================"
-echo "  Phase 7 Observability Test Suite"
+echo " Observability Test Suite"
 echo "========================================"
 echo ""
 
@@ -23,10 +23,10 @@ test_endpoint() {
     response=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
     
     if [ "$response" = "200" ] || [ "$response" = "503" ]; then
-        echo -e "${GREEN}✓ OK${NC} (HTTP $response)"
+        echo -e "${GREEN}OK${NC} (HTTP $response)"
         return 0
     else
-        echo -e "${RED}✗ FAIL${NC} (HTTP $response)"
+        echo -e "${RED}FAIL${NC} (HTTP $response)"
         return 1
     fi
 }

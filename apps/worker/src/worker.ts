@@ -36,23 +36,23 @@ async function notify(monitorId: string, status: 'up' | 'down', event: string) {
 }
 
 async function main() {
-  console.log('🚀 Starting worker service...');
+  console.log('Starting worker service...');
 
   // Start health check server
   startHealthServer();
-  console.log('✓ Health server started');
+  console.log('Health server started');
 
   await connectRedis();
-  console.log('✓ Connected to Redis');
+  console.log('Connected to Redis');
 
   await connectDb();
-  console.log('✓ Connected to Database');
+  console.log('Connected to Database');
 
   new Worker(
     'monitor-queue',
     async (job) => {
       const { monitorId, url } = job.data as MonitorJob;
-      console.log(`📊 Processing check for monitor ${monitorId}: ${url}`);
+      console.log(`Processing check for monitor ${monitorId}: ${url}`);
       const result = await executeCheck(url);
       await storeResult(
         monitorId,
@@ -65,13 +65,13 @@ async function main() {
       const evaluation = await evaluateState(monitorId, result.status);
       if (evaluation === 'STATE_CHANGED') {
         const incidentEvent = await handleIncident(monitorId, result.status);
-        console.log(`  🚨 State changed: ${incidentEvent}`);
+        console.log(`  State changed: ${incidentEvent}`);
         if (
           incidentEvent === 'INCIDENT_CREATED' ||
           incidentEvent === 'INCIDENT_RESOLVED'
         ) {
           await notify(monitorId, result.status, incidentEvent);
-          console.log(`  📧 Notification sent`);
+          console.log(`  Notification sent`);
         }
       }
     },
@@ -80,7 +80,7 @@ async function main() {
     }
   );
 
-  console.log('✓ Worker started and listening for jobs on monitor-queue');
+  console.log('Worker started and listening for jobs on monitor-queue');
 }
 
 main().catch((err) => {

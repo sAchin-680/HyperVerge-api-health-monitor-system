@@ -6,10 +6,10 @@ export function formatAlertMessage(
   const timestamp = new Date().toISOString();
 
   if (status === 'DOWN') {
-    return `⚠️ ALERT: ${monitorUrl} is DOWN\n\nTime: ${timestamp}\nDetails: ${JSON.stringify(details, null, 2)}`;
+    return `ALERT: ${monitorUrl} is DOWN\n\nTime: ${timestamp}\nDetails: ${JSON.stringify(details, null, 2)}`;
   }
 
-  return `✅ RECOVERED: ${monitorUrl} is back UP\n\nTime: ${timestamp}`;
+  return `RECOVERED: ${monitorUrl} is back UP\n\nTime: ${timestamp}`;
 }
 
 export function formatWebhookPayload(

@@ -51,7 +51,7 @@ jobs:
   # CI: Code Quality Checks
   # ===========================================================================
   quality:
-    name: 🔍 Code Quality
+    name: Code Quality
     runs-on: ubuntu-latest
 
     steps:
@@ -81,7 +81,7 @@ jobs:
   # CI: Build Verification
   # ===========================================================================
   build:
-    name: 🔨 Build
+    name: Build
     runs-on: ubuntu-latest
     needs: quality
 
@@ -111,7 +111,7 @@ jobs:
   # CI: Test Suite
   # ===========================================================================
   test:
-    name: 🧪 Tests
+    name: Tests
     runs-on: ubuntu-latest
     needs: build
 
@@ -175,7 +175,7 @@ jobs:
   # CI: Docker Build Validation
   # ===========================================================================
   docker-build:
-    name: 🐳 Docker Build
+    name: Docker Build
     runs-on: ubuntu-latest
     needs: [quality, build]
 
@@ -204,7 +204,7 @@ jobs:
   # CI: Terraform Validation
   # ===========================================================================
   terraform:
-    name: 🏗️ Terraform Validate
+    name: Terraform Validate
     runs-on: ubuntu-latest
 
     defaults:
@@ -233,7 +233,7 @@ jobs:
   # CI: Security Scanning
   # ===========================================================================
   security:
-    name: 🔐 Security Scan
+    name: Security Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -270,28 +270,28 @@ jobs:
       - name: Check all jobs
         run: |
           if [[ "${{ needs.quality.result }}" == "failure" ]]; then
-            echo "❌ Quality checks failed"
+            echo "Quality checks failed"
             exit 1
           fi
           if [[ "${{ needs.build.result }}" == "failure" ]]; then
-            echo "❌ Build failed"
+            echo "Build failed"
             exit 1
           fi
           if [[ "${{ needs.docker-build.result }}" == "failure" ]]; then
-            echo "❌ Docker build failed"
+            echo "Docker build failed"
             exit 1
           fi
           if [[ "${{ needs.terraform.result }}" == "failure" ]]; then
-            echo "❌ Terraform validation failed"
+            echo "Terraform validation failed"
             exit 1
           fi
-          echo "✅ All CI checks passed!"
+          echo "All CI checks passed!"
 
   # ===========================================================================
   # CD: Build and Push Docker Images
   # ===========================================================================
   docker-push:
-    name: 📦 Push Images
+    name: Push Images
     runs-on: ubuntu-latest
     needs: ci-success
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -344,7 +344,7 @@ jobs:
   # CD: Deploy to Staging
   # ===========================================================================
   deploy-staging:
-    name: 🚀 Deploy Staging
+    name: Deploy Staging
     runs-on: ubuntu-latest
     needs: docker-push
     if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
@@ -358,7 +358,7 @@ jobs:
 
       - name: Deploy to staging
         run: |
-          echo "🚀 Deploying to staging environment..."
+          echo "Deploying to staging environment..."
           echo "Image tag: ${{ github.sha }}"
           # Add your deployment commands here:
           # - kubectl set image deployment/api api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:${{ github.sha }}
@@ -367,7 +367,7 @@ jobs:
 
       - name: Verify deployment
         run: |
-          echo "✅ Staging deployment completed"
+          echo "Staging deployment completed"
           echo "Waiting for services to be healthy..."
           sleep 10
           # Add health check verification:
@@ -377,7 +377,7 @@ jobs:
   # CD: Deploy to Production (Requires Approval)
   # ===========================================================================
   deploy-production:
-    name: 🌐 Deploy Production
+    name: Deploy Production
     runs-on: ubuntu-latest
     needs: deploy-staging
     if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production'
@@ -391,19 +391,19 @@ jobs:
 
       - name: Deploy to production
         run: |
-          echo "🚀 Deploying to production environment..."
+          echo "Deploying to production environment..."
           echo "Image tag: ${{ github.sha }}"
           # Add your production deployment commands here
           # IMPORTANT: Production deployments should be carefully managed
 
       - name: Verify deployment
         run: |
-          echo "✅ Production deployment completed"
+          echo "Production deployment completed"
           # Add production health check verification
 
       - name: Notify success
         run: |
-          echo "📣 Production deployment successful!"
+          echo "Production deployment successful!"
           echo "Deployed version: ${{ github.sha }}"
           # Add Slack/Discord notification here if desired
 
@@ -411,14 +411,14 @@ jobs:
   # CD: Rollback (Manual Trigger)
   # ===========================================================================
   rollback:
-    name: ⏪ Rollback
+    name: Rollback
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && failure()
 
     steps:
       - name: Rollback deployment
         run: |
-          echo "⚠️ Initiating rollback..."
+          echo "Initiating rollback..."
           # Add rollback commands here:
           # kubectl rollout undo deployment/api
           echo "Rollback completed"
