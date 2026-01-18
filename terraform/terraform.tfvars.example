@@ -1,0 +1,33 @@
+# =============================================================================
+# Example terraform.tfvars
+# Copy this file to terraform.tfvars and fill in your values
+# =============================================================================
+
+# General Configuration
+aws_region   = "us-east-1"
+project_name = "hyperverge-monitor"
+environment  = "dev"  # dev, staging, or prod
+
+# VPC Configuration
+vpc_cidr                 = "10.0.0.0/16"
+availability_zones_count = 2
+
+# ECS Configuration
+ecs_task_cpu      = "256"    # 256, 512, 1024, 2048, 4096
+ecs_task_memory   = "512"    # Must be compatible with CPU choice
+container_image   = "nginx:latest"  # Your Docker image
+container_port    = 80
+ecs_desired_count = 1
+
+# RDS Configuration
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+db_engine_version    = "15"
+db_name              = "hyperverge"
+db_username          = "postgres"
+db_password          = "your-secure-password-here"  # CHANGE THIS!
+
+# ALB Configuration
+health_check_path = "/health"
+enable_https      = false
+certificate_arn   = ""  # Add ACM certificate ARN if enable_https = true
