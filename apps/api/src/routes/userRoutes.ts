@@ -2,8 +2,8 @@ import { Router } from 'express';
 import * as userController from '../controllers/userController';
 import { validate } from '../middlewares/validate';
 import {
-  userRegisterSchema,
   userLoginSchema,
+  userRegisterSchema,
 } from '../controllers/userController';
 
 const router = Router();

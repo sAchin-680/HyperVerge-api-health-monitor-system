@@ -10,7 +10,7 @@ import { startHealthServer } from './health';
 
 async function storeResult(
   monitorId: string,
-  status: 'UP' | 'DOWN',
+  status: 'up' | 'down',
   statusCode: number | null,
   latency: number
 ) {
@@ -18,13 +18,12 @@ async function storeResult(
     data: {
       monitorId,
       status,
-      statusCode,
-      latencyMs: latency,
+      responseMs: latency,
     },
   });
 }
 
-async function notify(monitorId: string, status: 'UP' | 'DOWN', event: string) {
+async function notify(monitorId: string, status: 'up' | 'down', event: string) {
   try {
     await fetch('http://notifier:4000/internal/incident', {
       method: 'POST',
@@ -78,8 +77,6 @@ async function main() {
     },
     {
       connection: monitorQueue.opts.connection,
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 2000 },
     }
   );
 

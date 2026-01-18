@@ -11,14 +11,14 @@ export async function executeCheck(url: string): Promise<CheckResult> {
     });
     const latency = Date.now() - start;
     return {
-      status: response.status >= 200 && response.status < 400 ? 'UP' : 'DOWN',
+      status: response.status >= 200 && response.status < 400 ? 'up' : 'down',
       statusCode: response.status,
       latency,
     };
-  } catch (err) {
+  } catch (_err) {
     const latency = Date.now() - start;
     return {
-      status: 'DOWN',
+      status: 'down',
       statusCode: null,
       latency,
       error: 'NETWORK_ERROR',

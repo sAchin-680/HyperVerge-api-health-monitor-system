@@ -2,10 +2,10 @@ import { redis } from './redis';
 import { Job } from '../../../packages/shared/src/types';
 import { logger } from './lib/logger';
 import {
-  jobsScheduled,
-  schedulingErrors,
   activeMonitorsCount,
+  jobsScheduled,
   schedulerCycleDuration,
+  schedulingErrors,
 } from './lib/metrics';
 import { startHealthServer } from './health';
 
@@ -41,7 +41,7 @@ function createJob(): Job & { timestamp: string; retries: number } {
 
 async function queueJob() {
   if (isShuttingDown) return;
-  let job = createJob();
+  const job = createJob();
   let attempt = 0;
 
   const endTimer = schedulerCycleDuration.startTimer();

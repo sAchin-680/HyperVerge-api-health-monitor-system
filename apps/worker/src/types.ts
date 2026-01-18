@@ -5,7 +5,7 @@ export type MonitorJob = {
 };
 
 export type CheckResult = {
-  status: 'UP' | 'DOWN';
+  status: 'up' | 'down';
   statusCode: number | null;
   latency: number;
   error?: string;

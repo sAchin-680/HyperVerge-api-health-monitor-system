@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { verifyJwt } from '../utils/jwt';
 
 export function authMiddleware(
