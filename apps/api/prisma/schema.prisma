@@ -1,0 +1,73 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enums
+enum MonitorStatus {
+  up
+  down
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Store a bcrypt hash, never plain text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  monitors  Monitor[]
+}
+
+model Monitor {
+  id        String   @id @default(uuid())
+  name      String
+  url       String   @db.VarChar(2048)
+  interval  Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  results   CheckResult[]
+  incidents Incident[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([url])
+  @@index([userId])
+}
+
+model CheckResult {
+  id         String   @id @default(uuid())
+  monitorId  String
+  monitor    Monitor  @relation(fields: [monitorId], references: [id])
+
+  status     MonitorStatus
+  responseMs Int?
+  checkedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([monitorId])
+  @@index([status])
+}
+
+model Incident {
+  id        String   @id @default(uuid())
+  monitorId String
+  monitor   Monitor  @relation(fields: [monitorId], references: [id])
+
+  startedAt DateTime
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([monitorId])
+  @@index([startedAt])
+}

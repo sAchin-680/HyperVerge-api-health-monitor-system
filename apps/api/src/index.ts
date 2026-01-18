@@ -1,19 +1,28 @@
 import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+import { errorHandler } from './middlewares/errorHandler';
+import authRoutes from './routes/authRoutes';
+import monitorRoutes from './routes/monitorRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
-app.get('/', (req, res) => {
-  res.send('API Health Monitor System is running!');
-});
+app.use(helmet());
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 app.get('/', (_, res) => {
   res.json({ status: 'API IS RUNNING' });
 });
 
-app.listen(4000, () => {
-  console.log('API is running on http://localhost:4000');
+app.use('/auth', authRoutes);
+app.use('/monitors', monitorRoutes);
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`API is running on http://localhost:${PORT}`);
 });
