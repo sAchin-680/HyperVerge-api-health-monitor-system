@@ -1,0 +1,10 @@
+{
+  "name": "@apps/scheduler",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ioredis": "^5.9.2"
+  }
+}
