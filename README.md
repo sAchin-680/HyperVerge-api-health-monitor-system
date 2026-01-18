@@ -123,7 +123,6 @@ All services use Pino for structured JSON logging:
 LOG_LEVEL=debug npm run dev
 ```
 
-
 ## Services
 
 ### API Service (Port 4000)

@@ -4,8 +4,8 @@
   "description": "Production-grade API health monitoring system with microservices architecture",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit -p tsconfig.base.json",
     "typecheck:api": "tsc --noEmit -p apps/api/tsconfig.json",
     "typecheck:worker": "tsc --noEmit -p apps/worker/tsconfig.json",

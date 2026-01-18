@@ -3,7 +3,7 @@ import { prisma } from './db';
 
 export async function evaluateState(
   monitorId: string,
-  currentStatus: 'UP' | 'DOWN'
+  currentStatus: 'up' | 'down'
 ) {
   const lastCheck = await prisma.checkResult.findFirst({
     where: { monitorId },

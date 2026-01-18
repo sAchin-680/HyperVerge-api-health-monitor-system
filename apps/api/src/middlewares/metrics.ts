@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { httpRequestDuration, httpRequestTotal } from '../lib/metrics';
 
 export function metricsMiddleware(

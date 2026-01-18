@@ -1,7 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
+import { NextFunction, Request, Response } from 'express';
 import * as monitorService from '../services/monitorService';
-import { monitorSchema } from '../validators/monitor';
 
 export async function createMonitor(
   req: Request,
@@ -38,7 +36,7 @@ export async function updateMonitor(
 ) {
   try {
     const userId = (req as any).user.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const monitor = await monitorService.updateMonitor(userId, id, req.body);
     res.json(monitor);
   } catch (err) {
@@ -53,7 +51,7 @@ export async function deleteMonitor(
 ) {
   try {
     const userId = (req as any).user.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     await monitorService.deleteMonitor(userId, id);
     res.status(204).send();
   } catch (err) {
@@ -68,7 +66,7 @@ export async function getMonitorResults(
 ) {
   try {
     const userId = (req as any).user.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const results = await monitorService.getMonitorResults(userId, id);
     res.json(results);
   } catch (err) {

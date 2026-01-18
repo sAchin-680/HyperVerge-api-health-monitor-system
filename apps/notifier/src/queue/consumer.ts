@@ -1,14 +1,13 @@
-import { Worker, Job } from 'bullmq';
+import { Job, Worker } from 'bullmq';
 import { sendEmail } from '../providers/email';
 import { sendWebhook } from '../providers/webhook';
 import { logDelivery } from '../services/delivery.service';
 import { retryQueue } from './retryQueue';
 import { logger } from '../lib/logger';
 import {
-  notificationsSent,
   notificationDuration,
+  notificationsSent,
   retryAttempts,
-  notificationQueueSize,
 } from '../lib/metrics';
 
 // Type-only import to avoid runtime issues
