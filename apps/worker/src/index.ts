@@ -1,17 +1,45 @@
 import { redis } from './redis';
 import { Job, Alert } from '../../../packages/shared/src/types';
+import { logger } from './lib/logger';
+import { checksExecuted, checkDuration } from './lib/metrics';
+import { startHealthServer } from './health';
 
 async function checkWebsite(url: string): Promise<Alert> {
   const start = Date.now();
+  const end = checkDuration.startTimer({ type: 'http' });
 
   try {
     const res = await fetch(url);
+    const duration = Date.now() - start;
+    const status = res.ok ? 'UP' : 'DOWN';
+
+    end({ status: res.ok ? 'success' : 'failure' });
+    checksExecuted.inc({
+      status: res.ok ? 'success' : 'failure',
+      type: 'http',
+    });
+
+    logger.info(
+      { url, status, responseTime: duration, httpStatus: res.status },
+      'Website check completed'
+    );
+
     return {
       url,
-      status: res.ok ? 'UP' : 'DOWN',
-      responseTime: Date.now() - start,
+      status,
+      responseTime: duration,
     };
-  } catch {
+  } catch (error) {
+    const duration = Date.now() - start;
+
+    end({ status: 'failure' });
+    checksExecuted.inc({ status: 'failure', type: 'http' });
+
+    logger.error(
+      { url, error, responseTime: duration },
+      'Website check failed'
+    );
+
     return {
       url,
       status: 'DOWN',
@@ -24,52 +52,51 @@ async function checkWebsite(url: string): Promise<Alert> {
 import { createClient } from 'redis';
 import { processJob } from './redis';
 
-// Enhanced logging utility
-const log = (message: string, ...args: any[]) => {
-  console.log(`[Worker] ${new Date().toISOString()} - ${message}`, ...args);
-};
-
 async function startWorker() {
-  console.log('[WORKER] Waiting for jobs...');
+  logger.info('Worker starting - waiting for jobs...');
 
   while (true) {
     const result = await redis.brpop('jobs', 0);
     const job: Job = JSON.parse(result![1]);
 
-    console.log('[WORKER] Processing job:', job);
+    logger.info({ job }, 'Processing job');
 
     const alert = await checkWebsite(job.url);
 
     await redis.lpush('alerts', JSON.stringify(alert));
 
-    console.log('[WORKER] Alert queued:', alert);
+    logger.info({ alert }, 'Alert queued');
   }
 }
 
 async function main() {
-  log('Starting worker...');
+  logger.info('Starting worker service...');
+
+  // Start health check server
+  startHealthServer();
+
   let client;
   try {
     client = createClient();
-    client.on('error', (err) => log('Redis Client Error', err));
+    client.on('error', (err) => logger.error({ err }, 'Redis client error'));
     await client.connect();
-    log('Connected to Redis');
+    logger.info('Connected to Redis');
 
     // Main job processing loop
     while (true) {
       try {
         const job = await client.blPop('jobQueue', 0);
         if (job) {
-          log('Received job:', job);
+          logger.info({ job }, 'Received job from queue');
           await processJob(job);
-          log('Job processed successfully');
+          logger.info('Job processed successfully');
         }
       } catch (jobErr) {
-        log('Error processing job', jobErr);
+        logger.error({ err: jobErr }, 'Error processing job');
       }
     }
   } catch (err) {
-    log('Fatal error in worker', err);
+    logger.fatal({ err }, 'Fatal error in worker');
     process.exit(1);
   }
 }
