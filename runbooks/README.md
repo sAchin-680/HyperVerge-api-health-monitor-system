@@ -11,6 +11,7 @@ This directory contains operational runbooks for the HyperVerge API Health Monit
 | [Database Operations](database-operations.md) | Database maintenance and recovery          |
 | [Scaling](scaling.md)                         | Horizontal and vertical scaling procedures |
 | [Troubleshooting](troubleshooting.md)         | Common issues and solutions                |
+| [Failures](failures.md)                       | Failure modes and recovery procedures      |
 
 ## On-Call Responsibilities
 
