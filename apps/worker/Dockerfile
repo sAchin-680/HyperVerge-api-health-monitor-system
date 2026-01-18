@@ -1,5 +1,5 @@
 # Production-grade Dockerfile for Worker service
-FROM node:20-alpine
+FROM node:25-alpine
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl
