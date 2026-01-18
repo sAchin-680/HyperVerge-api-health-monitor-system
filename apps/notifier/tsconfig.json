@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "../../",
+    "paths": {
+      "@packages/shared/*": ["packages/shared/*"]
+    }
+  },
+  "include": ["src/**/*", "test-notifier.ts"],
+  "exclude": ["node_modules", "dist"]
+}
