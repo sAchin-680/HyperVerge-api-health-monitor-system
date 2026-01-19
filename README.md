@@ -384,11 +384,6 @@ Below are screenshots demonstrating the system running successfully in developme
   </figure>
 </div>
 
-**Notes:**
-
-- Use the same filenames in `assets/proof_work/` for automatic rendering.
-- Prefer original photos with aspect ratio 16:9 and minimum width 1200px for best presentation.
-- Remove or replace captions as needed.
 
 ## License
 
