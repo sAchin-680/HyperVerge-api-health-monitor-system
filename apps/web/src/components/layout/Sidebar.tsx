@@ -79,7 +79,6 @@ export default function Sidebar() {
           <p className="text-[10px] font-medium text-slate-600 uppercase tracking-wider">
             API Health Monitor
           </p>
-          <p className="text-xs text-slate-400 mt-1">DevOps Internship 2026</p>
         </div>
       </div>
     </aside>
