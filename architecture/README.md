@@ -4,12 +4,13 @@ This directory contains architecture documentation and diagrams for the HyperVer
 
 ## Contents
 
-| Document | Description |
-|----------|-------------|
-| [System Overview](system-overview.md) | High-level architecture |
-| [Data Flow](data-flow.md) | Request and data flow diagrams |
-| [Infrastructure](infrastructure.md) | AWS infrastructure architecture |
-| [Database Schema](database-schema.md) | Entity relationship diagram |
+| Document                              | Description                         |
+| ------------------------------------- | ----------------------------------- |
+| [System Overview](system-overview.md) | High-level architecture             |
+| [Data Flow](data-flow.md)             | Request and data flow diagrams      |
+| [Infrastructure](infrastructure.md)   | AWS infrastructure architecture     |
+| [Database Schema](database-schema.md) | Entity relationship diagram         |
+| [Diagrams](diagrams.md)               | ASCII diagrams for export to images |
 
 ## Architecture Principles
 
@@ -21,25 +22,25 @@ This directory contains architecture documentation and diagrams for the HyperVer
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Next.js, React, TypeScript |
-| API | Express.js, TypeScript |
-| Database | PostgreSQL |
-| Cache/Queue | Redis, BullMQ |
-| Infrastructure | AWS ECS, RDS, ElastiCache |
-| Monitoring | Prometheus, Grafana |
-| CI/CD | GitHub Actions |
+| Layer          | Technology                 |
+| -------------- | -------------------------- |
+| Frontend       | Next.js, React, TypeScript |
+| API            | Express.js, TypeScript     |
+| Database       | PostgreSQL                 |
+| Cache/Queue    | Redis, BullMQ              |
+| Infrastructure | AWS ECS, RDS, ElastiCache  |
+| Monitoring     | Prometheus, Grafana        |
+| CI/CD          | GitHub Actions             |
 
 ## Quick Reference
 
 ### Service Ports
 
-| Service | Port | Protocol |
-|---------|------|----------|
-| API | 4000 | HTTP |
-| Worker | 4001 | HTTP (health only) |
-| Scheduler | 4002 | HTTP (health only) |
-| Notifier | 4003 | HTTP (health only) |
-| PostgreSQL | 5432 | TCP |
-| Redis | 6379 | TCP |
+| Service    | Port | Protocol           |
+| ---------- | ---- | ------------------ |
+| API        | 4000 | HTTP               |
+| Worker     | 4001 | HTTP (health only) |
+| Scheduler  | 4002 | HTTP (health only) |
+| Notifier   | 4003 | HTTP (health only) |
+| PostgreSQL | 5432 | TCP                |
+| Redis      | 6379 | TCP                |

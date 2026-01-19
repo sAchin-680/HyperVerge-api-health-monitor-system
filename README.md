@@ -2,6 +2,19 @@
 
 Production-grade distributed API health monitoring system with real-time alerting and observability.
 
+## Overview
+
+**Problem:** DevOps and SRE teams struggle to monitor the health of hundreds of APIs across distributed systems. Manual monitoring doesn't scale, and delayed detection of outages leads to customer impact.
+
+**Solution:** A fully automated health monitoring system that:
+
+- Continuously checks API endpoints at configurable intervals
+- Detects incidents automatically using threshold-based logic
+- Sends multi-channel alerts (email, webhook) with retry mechanisms
+- Provides production-grade observability (metrics, logs, traces)
+
+Built with a microservices architecture designed for horizontal scaling, fault tolerance, and 99.9% uptime.
+
 ## Features
 
 - ✅ **Multi-service architecture** - API, Worker, Scheduler, Notifier microservices
@@ -281,6 +294,58 @@ Configure alerts in Prometheus:
 - **Availability:** 99.9% uptime with proper infrastructure
 - **Scalability:** Horizontal scaling via worker instances
 
+## Architecture Tradeoffs
+
+| Decision          | Alternative Considered | Why This Choice                                                            |
+| ----------------- | ---------------------- | -------------------------------------------------------------------------- |
+| **BullMQ/Redis**  | Kafka, RabbitMQ        | Simpler setup, good enough durability for health checks that run every 30s |
+| **Express.js**    | Fastify, Hono          | Mature ecosystem, team familiarity; bottleneck is DB not HTTP              |
+| **JWT Auth**      | OAuth 2.0              | Stateless, simple; OAuth planned for v2                                    |
+| **PostgreSQL**    | TimescaleDB            | ACID compliance, familiar; time-series can be added later                  |
+| **Microservices** | Monolith               | Independent scaling, fault isolation; adds operational complexity          |
+| **Prisma ORM**    | Raw SQL, Drizzle       | Type safety, migrations; slight performance overhead acceptable            |
+
+## Security
+
+### Implemented
+
+- **Authentication:** JWT with bcrypt password hashing (12 rounds)
+- **Input Validation:** Zod schemas on all endpoints
+- **SQL Injection:** Prevented via Prisma parameterized queries
+- **Secrets:** Environment variables, never hardcoded
+- **Container Security:** Non-root users in Docker images
+- **Dependencies:** Trivy scanning in CI/CD pipeline
+
+### Planned
+
+- Rate limiting with Redis-based sliding window
+- OAuth 2.0 / OIDC integration
+- AWS Secrets Manager integration
+- Network policies for service-to-service communication
+
+## Future Improvements
+
+### Short-term (v1.1)
+
+- [ ] Rate limiting on API endpoints
+- [ ] Request tracing with correlation IDs
+- [ ] OpenAPI/Swagger documentation
+- [ ] Load testing with k6
+
+### Medium-term (v1.5)
+
+- [ ] Distributed tracing with OpenTelemetry
+- [ ] Canary deployments with automatic rollback
+- [ ] Chaos engineering tests
+- [ ] Custom business metrics dashboard
+
+### Long-term (v2.0)
+
+- [ ] Multi-region deployment
+- [ ] ML-based anomaly detection
+- [ ] SLA tracking and reporting
+- [ ] Self-service webhook configuration
+
 ## Contributing
 
 1. Fork the repository
@@ -288,6 +353,13 @@ Configure alerts in Prometheus:
 3. Commit changes (`git commit -m 'Add amazing feature'`)
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
+
+## Documentation
+
+- [Architecture Overview](architecture/system-overview.md)
+- [Engineering Log](ENGINEERING_LOG.md) - Design decisions and tradeoffs
+- [Runbooks](runbooks/README.md) - Operational procedures
+- [Deployment Guide](runbooks/deployment.md)
 
 ## License
 
