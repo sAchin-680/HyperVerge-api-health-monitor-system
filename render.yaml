@@ -1,0 +1,66 @@
+# Render manifest for deploying services from this monorepo
+# Replace <REPO> with sAchin-680/HyperVerge-api-health-monitor-system when adding to Render
+
+services:
+  - type: web
+    name: hyperverge-api
+    env: docker
+    plan: starter
+    region: singapore
+    branch: main
+    repo: sAchin-680/HyperVerge-api-health-monitor-system
+    dockerfilePath: apps/api/Dockerfile
+    # root is repo root by default; dockerfilePath sets the build context
+    envVars:
+      - key: DATABASE_URL
+        value: '${DATABASE_URL}'
+      - key: REDIS_URL
+        value: '${REDIS_URL}'
+
+  - type: worker
+    name: hyperverge-scheduler
+    env: docker
+    plan: starter
+    region: singapore
+    branch: main
+    repo: sAchin-680/HyperVerge-api-health-monitor-system
+    dockerfilePath: apps/scheduler/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        value: '${DATABASE_URL}'
+      - key: REDIS_URL
+        value: '${REDIS_URL}'
+
+  - type: worker
+    name: hyperverge-worker
+    env: docker
+    plan: starter
+    region: singapore
+    branch: main
+    repo: sAchin-680/HyperVerge-api-health-monitor-system
+    dockerfilePath: apps/worker/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        value: '${DATABASE_URL}'
+      - key: REDIS_URL
+        value: '${REDIS_URL}'
+
+  - type: worker
+    name: hyperverge-notifier
+    env: docker
+    plan: starter
+    region: singapore
+    branch: main
+    repo: sAchin-680/HyperVerge-api-health-monitor-system
+    dockerfilePath: apps/notifier/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        value: '${DATABASE_URL}'
+      - key: REDIS_URL
+        value: '${REDIS_URL}'
+
+# Notes:
+# - Do NOT commit secrets to the repo. Set DATABASE_URL, REDIS_URL, SMTP_* and other secrets
+#   in Render's dashboard after you create the services.
+# - You can adjust `plan` to one of Render's tiers (free, starter, standard, pro, ...).
+# - If you prefer to host the frontend on Vercel, skip creating the `web` service here and use Vercel.
