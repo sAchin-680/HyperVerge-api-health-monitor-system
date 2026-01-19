@@ -2,7 +2,7 @@
 
 Production-grade AWS infrastructure for the HyperVerge API Health Monitor System.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -35,7 +35,7 @@ Production-grade AWS infrastructure for the HyperVerge API Health Monitor System
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 terraform/
@@ -80,7 +80,7 @@ terraform/
         └── terraform.tfvars
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -140,7 +140,7 @@ terraform output application_url
 terraform output db_endpoint
 ```
 
-## 📦 Modules
+## Modules
 
 ### VPC Module
 
@@ -194,7 +194,7 @@ PostgreSQL database with:
 - Credentials stored in Secrets Manager
 - Storage auto-scaling
 
-## 🔧 Configuration
+## Configuration
 
 ### Required Variables
 
@@ -222,7 +222,7 @@ export TF_VAR_db_password="your-secure-password"
 terraform apply
 ```
 
-## 🔐 Security Best Practices
+## Security Best Practices
 
 1. **Least Privilege**: Security groups only allow necessary traffic
 2. **Private Subnets**: ECS and RDS are not publicly accessible
@@ -231,7 +231,7 @@ terraform apply
 5. **IAM Roles**: Separate execution and task roles
 6. **TLS**: HTTPS option with modern TLS policy
 
-## 📊 Monitoring
+## Monitoring
 
 ### CloudWatch Logs
 
@@ -248,7 +248,7 @@ Enabled by default - view in CloudWatch Console under Container Insights.
 
 Enabled by default - view in RDS Console.
 
-## 🔄 Common Operations
+## Common Operations
 
 ### Force New Deployment
 
@@ -277,7 +277,7 @@ aws ecs update-service \
   --desired-count 3
 ```
 
-## 🧹 Cleanup
+## Cleanup
 
 ```bash
 # Destroy all resources
@@ -287,9 +287,9 @@ terraform destroy -var-file=envs/dev/terraform.tfvars
 terraform destroy -var-file=envs/dev/terraform.tfvars -auto-approve
 ```
 
-⚠️ **Warning**: This will destroy all infrastructure including the database!
+**Warning**: This will destroy all infrastructure including the database!
 
-## 📈 Cost Optimization
+## Cost Optimization
 
 ### Development
 
@@ -304,7 +304,7 @@ terraform destroy -var-file=envs/dev/terraform.tfvars -auto-approve
 - RDS Reserved Instances
 - Use S3 lifecycle policies for logs
 
-## 🛠️ Extending
+## Extending
 
 ### Adding Redis/ElastiCache
 
@@ -338,7 +338,7 @@ Example GitHub Actions workflow:
     TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 ```
 
-## 📚 References
+## References
 
 - [Terraform AWS Provider Docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 - [AWS ECS Best Practices](https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/)

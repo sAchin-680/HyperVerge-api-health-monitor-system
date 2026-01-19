@@ -17,14 +17,14 @@ Built with a microservices architecture designed for horizontal scaling, fault t
 
 ## Features
 
-- ✅ **Multi-service architecture** - API, Worker, Scheduler, Notifier microservices
-- ✅ **Real-time monitoring** - Continuous API health checks
-- ✅ **Incident management** - Automatic incident detection and tracking
-- ✅ **Multi-channel notifications** - Email and webhook alerts
-- ✅ **Retry mechanisms** - Exponential backoff with dead-letter queues
-- ✅ **Production observability** - Health checks, Prometheus metrics, structured logging
-- ✅ **Queue-based architecture** - BullMQ for reliable job processing
-- ✅ **Kubernetes-ready** - Health probes and container-friendly
+- **Multi-service architecture** - API, Worker, Scheduler, Notifier microservices
+- **Real-time monitoring** - Continuous API health checks
+- **Incident management** - Automatic incident detection and tracking
+- **Multi-channel notifications** - Email and webhook alerts
+- **Retry mechanisms** - Exponential backoff with dead-letter queues
+- **Production observability** - Health checks, Prometheus metrics, structured logging
+- **Queue-based architecture** - BullMQ for reliable job processing
+- **Kubernetes-ready** - Health probes and container-friendly
 
 ## Architecture
 
