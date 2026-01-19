@@ -7,8 +7,7 @@ export async function createMonitor(
   next: NextFunction
 ) {
   try {
-    const userId = (req as any).user.userId;
-    const monitor = await monitorService.createMonitor(userId, req.body);
+    const monitor = await monitorService.createMonitor(req.body);
     res.status(201).json(monitor);
   } catch (err) {
     next(err);
@@ -21,9 +20,22 @@ export async function getMonitors(
   next: NextFunction
 ) {
   try {
-    const userId = (req as any).user.userId;
-    const monitors = await monitorService.getMonitors(userId);
+    const monitors = await monitorService.getMonitors();
     res.json(monitors);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMonitor(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const id = req.params.id as string;
+    const monitor = await monitorService.getMonitor(id);
+    res.json(monitor);
   } catch (err) {
     next(err);
   }
@@ -35,9 +47,8 @@ export async function updateMonitor(
   next: NextFunction
 ) {
   try {
-    const userId = (req as any).user.userId;
     const id = req.params.id as string;
-    const monitor = await monitorService.updateMonitor(userId, id, req.body);
+    const monitor = await monitorService.updateMonitor(id, req.body);
     res.json(monitor);
   } catch (err) {
     next(err);
@@ -50,9 +61,8 @@ export async function deleteMonitor(
   next: NextFunction
 ) {
   try {
-    const userId = (req as any).user.userId;
     const id = req.params.id as string;
-    await monitorService.deleteMonitor(userId, id);
+    await monitorService.deleteMonitor(id);
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -65,9 +75,8 @@ export async function getMonitorResults(
   next: NextFunction
 ) {
   try {
-    const userId = (req as any).user.userId;
     const id = req.params.id as string;
-    const results = await monitorService.getMonitorResults(userId, id);
+    const results = await monitorService.getMonitorResults(id);
     res.json(results);
   } catch (err) {
     next(err);
