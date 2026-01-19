@@ -361,6 +361,35 @@ Configure alerts in Prometheus:
 - [Runbooks](runbooks/README.md) - Operational procedures
 - [Deployment Guide](runbooks/deployment.md)
 
+## Proof of Work
+
+Below are screenshots demonstrating the system running successfully in development:
+
+1. **Dashboard Frontend** — Live health-check UI confirming all monitors are operational.
+2. **Backend Scheduler** — Terminal logs showing recurring jobs being queued on schedule.
+3. **Worker Service** — Terminal logs proving health-check executions complete without errors.
+
+<div style="display:flex;gap:16px;align-items:flex-start;justify-content:center;flex-wrap:wrap">
+  <figure style="margin:0;text-align:center">
+    <img src="assets/proof_work/Dashboard.heic" alt="Dashboard frontend showing all monitors healthy" style="width:320px;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.4)"/>
+    <figcaption style="font-size:13px;margin-top:8px">Dashboard Frontend — Success Logs</figcaption>
+  </figure>
+  <figure style="margin:0;text-align:center">
+    <img src="assets/proof_work/Frontend.heic" alt="Backend scheduler terminal logs running successfully" style="width:320px;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.4)"/>
+    <figcaption style="font-size:13px;margin-top:8px">Backend Scheduler — Success Logs</figcaption>
+  </figure>
+  <figure style="margin:0;text-align:center">
+    <img src="assets/proof_work/Backend.heic" alt="Worker service terminal logs executing health checks" style="width:320px;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.4)"/>
+    <figcaption style="font-size:13px;margin-top:8px">Worker Service — Success Logs</figcaption>
+  </figure>
+</div>
+
+**Notes:**
+
+- Use the same filenames in `assets/proof_work/` for automatic rendering.
+- Prefer original photos with aspect ratio 16:9 and minimum width 1200px for best presentation.
+- Remove or replace captions as needed.
+
 ## License
 
 MIT License - see LICENSE file for details
