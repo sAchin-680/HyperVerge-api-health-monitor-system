@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import * as monitorController from '../controllers/monitorController';
-import { authMiddleware } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { monitorSchema } from '../validators/monitor';
 
 const router = Router();
 
-router.use(authMiddleware);
+// Public routes - no authentication required
 router.get('/', monitorController.getMonitors);
 router.post('/', validate(monitorSchema), monitorController.createMonitor);
+router.get('/:id', monitorController.getMonitor);
 router.patch(
   '/:id',
   validate(monitorSchema.partial()),

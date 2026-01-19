@@ -29,8 +29,8 @@ model Monitor {
   name      String
   url       String   @db.VarChar(2048)
   interval  Int
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 
   results   CheckResult[]
   incidents Incident[]
