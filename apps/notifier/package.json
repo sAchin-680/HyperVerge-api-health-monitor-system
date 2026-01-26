@@ -9,7 +9,7 @@
     "test": "tsx test-notifier.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^7.3.0",
     "bullmq": "^5.66.5",
     "express": "^5.2.1",
     "ioredis": "^5.9.2",
