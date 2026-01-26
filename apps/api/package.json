@@ -33,7 +33,7 @@
     "@types/node": "^25.0.9",
     "install": "^0.13.0",
     "npm": "^11.7.0",
-    "prisma": "^6.19.2",
+    "prisma": "^7.3.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescriptnpm": "^1.0.1"
