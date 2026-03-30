@@ -30,12 +30,12 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^25.0.9",
+    "@types/node": "^25.5.0",
     "install": "^0.13.0",
     "npm": "^11.7.0",
     "prisma": "^6.19.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "typescriptnpm": "^1.0.1"
   }
 }
